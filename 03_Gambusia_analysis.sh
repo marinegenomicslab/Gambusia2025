@@ -1575,3 +1575,359 @@ ind.v <- c(ind.v, sample(indNames(gen2)[gen2@strata$POP == "Gag-SMR"],2))
 
 write.table(ind.v, file="Tree_samples.txt", col.names=F, row.names=F, quote=F)
 } #notepad cleanup
+
+#Preparing data for Genealogical Divergence Index analysis with BPP
+{```{bash}```
+#Gathering only the Gambusia samples
+vcftools --vcf SNP.TRS.F04.recode.vcf --out SNP.TRS.F04_Gambusia --recode --recode-INFO-all --keep Gambusia_samples
+#Removing all missing data
+vcftools --vcf SNP.TRS.F04_Gambusia.recode.vcf --out SNP.TRS.F04_Gambusia_noMiss --recode --recode-INFO-all --max-missing 1
+#Haplotyping the data
+perl rad_haplotyper.pl -v SNP.TRS.F04_Gambusia_noMiss.recode.vcf -r reference.fasta -p popmap -o SNP.TRS.gdi.vcf -g SNP.TRS.gdi.gen -x 120 -m 0.8
+}
+
+#Getting DNA sequence from a loci for samples (Gambusia)
+{```{R}```
+#Load libraries
+library('adegenet')
+library('vcfR')
+
+#Load genetic information
+gen <- read.genepop(file = "SNP.TRS.gdi.gen", ncode=3L, quiet = FALSE)
+vcf <- read.vcfR(file="SNP.TRS.gdi.vcf")
+gen.vcf <- vcfR2genind(vcf)
+
+#Load reference sequence
+dna <- ape::read.dna("reference.fasta", format="fasta", as.character=T)
+
+#Import bed file
+bed <- read.table("mapped.bed", head=F)
+
+#Import allele codes file
+hap_code <- read.table("codes.SNP.TRS.gdi.gen", head=F)
+
+#Put allele codes into a list
+allele.list <- vector(length=nrow(hap_code), mode="list")
+names(allele.list) <- hap_code$V1
+
+for(i in hap_code$V1){
+tmp.m <- matrix(unlist(strsplit(hap_code[hap_code$V1 == i, "V2"],",")),ncol=1)
+allele.list[[i]] <- matrix(unlist(strsplit(tmp.m,":")),ncol=2,byrow=T)
+}
+
+#Removing loci with missing data
+contigs <- unique(vcf@fix[,"CHROM"])
+indv <- colnames(vcf@gt)[-1]
+
+tmp.tab <- vector(length=length(contigs))
+names(tmp.tab) <- contigs
+for(i in contigs){
+tmp.v <- grep(paste(i,"[.]",sep=""), colnames(gen@tab), value=T)
+tmp.tab[i] <- sum(is.na(gen@tab[,tmp.v[1]]))
+}
+
+contigs <- names(tmp.tab)[tmp.tab == 0]
+
+#Removing loci with only one allele
+contigs <- contigs[!contigs %in% names(which(gen@loc.n.all == 1))]
+
+#Make dataframes of individuals and allele sequence
+genotype.list <- vector(length=length(contigs), mode="list")
+names(genotype.list) <- contigs
+
+for(i in contigs){
+	print(paste("Processing contig",i))
+	tmp.pos <- as.numeric(vcf@fix[vcf@fix[,"CHROM"] == i & !grepl(",",vcf@fix[,"ALT"]), "POS"])
+	tmp.bed <- bed[bed$V1 == i, ]
+	#Setup dataframe for recording results
+	tmp.df <- data.frame(INDV=paste(rep(indv,each=2),rep(c("a","b"),length(indv)),sep="_"),Seq=rep("NaN",length(indv)*2))
+	for(j in indv){
+		#Gather the alleles
+		tmp.v <- gen@tab[j,grep(paste(i,"[.]",sep=""), colnames(gen@tab), value=T)]
+		if(sum(is.na(tmp.v)) > 0){next}
+		tmp.alleles <- matrix(unlist(strsplit(names(tmp.v)[tmp.v > 0], "[.]")),ncol=2,byrow=T)[,2]
+		if(length(tmp.alleles) == 1){tmp.alleles <- c(tmp.alleles,tmp.alleles)}
+		#Getting the bases that are variable
+		#Getting the bases that are compared
+		#Making the sequences for the individual
+		for(k in 1:2){
+			tmp.seq <- unlist(dna[i])
+			tmp.seq[tmp.pos] <- unlist(strsplit(allele.list[[i]][allele.list[[i]][,2] %in% tmp.alleles[k], 1],""))
+			if(nrow(tmp.bed) == 1){
+				if(k == 1){tmp.df[tmp.df$INDV == paste(j,"a",sep="_"), 2] <- toupper(paste(tmp.seq[seq(tmp.bed$V2,tmp.bed$V3)],collapse=""))}
+				if(k == 2){tmp.df[tmp.df$INDV == paste(j,"b",sep="_"), 2] <- toupper(paste(tmp.seq[seq(tmp.bed$V2,tmp.bed$V3)],collapse=""))}
+			}
+			if(nrow(tmp.bed) == 2){
+				if(k == 1){tmp.df[tmp.df$INDV == paste(j,"a",sep="_"), 2] <- toupper(paste(c(tmp.seq[seq(tmp.bed$V2[1],tmp.bed$V3[1])],tmp.seq[seq(tmp.bed$V2[2],tmp.bed$V3[2])]),collapse=""))}
+				if(k == 2){tmp.df[tmp.df$INDV == paste(j,"b",sep="_"), 2] <- toupper(paste(c(tmp.seq[seq(tmp.bed$V2[1],tmp.bed$V3[1])],tmp.seq[seq(tmp.bed$V2[2],tmp.bed$V3[2])]),collapse=""))}
+			}
+		}
+	}	
+	genotype.list[[i]] <- tmp.df
+}
+
+#Write phylip file
+for(i in contigs){
+	tmp.df <- genotype.list[[i]]
+	tmp.df <- tmp.df[tmp.df$Seq != "NaN",]
+	tmp.df$INDV <- apply(tmp.df, 1, function(x) paste(x[1],"^",which(tmp.df$INDV == x[1]),sep=""))
+	bed_len <- length(unlist(strsplit(tmp.df[1,2],"")))
+	if(which(contigs == i) == 1){
+		write.table(paste(nrow(tmp.df),bed_len,sep=" "), file="phylip.txt", append=F, sep=" ", col.names=F, row.names=F, quote=F)
+		write.table(tmp.df, file="phylip.txt", append=T, sep="\t", col.names=F, row.names=F, quote=F)
+	} else {
+		write.table(paste(nrow(tmp.df),bed_len,sep=" "), file="phylip.txt", append=T, sep=" ", col.names=F, row.names=F, quote=F)
+		write.table(tmp.df, file="phylip.txt", append=T, sep="\t", col.names=F, row.names=F, quote=F)
+	}
+}
+
+save.image("vcf_to_phylip.RData.gz", compress=T)
+
+}}}}}}}}}} #notepad cleanup
+
+#Preparing BPP files (gdiPipeline code)
+{```{R}```
+#Load libraries
+library(gdiPipeline)
+library(RColorBrewer)
+
+#Load variables
+wd="/home/afields/Workspace/misc/Gambusia/analysis/gdi/gambusia/test"
+plotColors = c(brewer.pal(7, "Paired"), "black") # for later plots of GDI
+nLoci = 1585
+threads = 16
+nreps = 8
+
+#Load data
+treefile="tree.txt"
+priors="priors.txt" 
+map="imap.txt" 
+heredity = "heredity.txt"
+loci = "phylip.txt"
+ctl = "ctlTemplate.ctl"
+
+# create BPP control file template for bppInputs function
+BPPCtlTemplate(wd)
+# specify priors and maximally split tree
+bppInputs(wd, treefile, map, priors, heredity, loci, ctl, nLoci, threads, nreps)
+# create task file, each line with a different command to run BPP
+bppTaskFile(wd)
+# assess mixing and convergence of BPP analyses
+burnin = 0.1 # proportion of MCMC generations to discard as burnin
+checkConvergence(wd=wd, nreps=nreps, burnin=burnin)
+}
+
+#Loop for multiple node analysis
+{```{bash}```
+seq 1 $(cat BPPTaskFile.txt | wc -l) | while read i; do
+#if [ $(squeue -u afields3 | grep bpp | wc -l) -gt 3 ]; then sleep 30; fi
+TMP=$(head -n$i BPPTaskFile.txt | tail -n1)
+DIR=$(echo $TMP | cut -f2 -d" " | cut -f1 -d";")
+MODEL=$(echo $DIR | cut -f1 -d"/")
+RUN=$(echo $DIR | awk -v FS="-" '{print $NF}')
+CMD=$(echo $TMP | cut -f2 -d";")
+sbatch -o bpp_${MODEL}_${RUN}.out -e bpp_${MODEL}_${RUN}.err --export=DIR=$DIR,CMD="$CMD",MODEL=$MODEL,RUN=$RUN bpp_start.slurm
+sleep 1
+done &
+} #notepad cleanup
+
+#Analyzing BPP MCMC
+{```{R}```
+library('gdiPipeline')
+library('RColorBrewer')
+library('ape')
+library('phytools')
+library('ggplot2')
+library('reshape2')
+library('coda')
+
+#Code from bppSummarizeGDI <- function(wd, col, nreps, burnin)
+wd <- getwd()
+dirs <- list.dirs(path=wd)
+dirs <- grep("tau", dirs, value=TRUE)
+
+mcmc_list <- list()
+all_mcmc <- NULL
+count <- 1
+
+burnin <- 20000/500000
+for(i in dirs) {
+	rep <- strsplit(i, "-")
+	rep <- rep[[1]][length(rep[[1]])]
+	#Get populations from tree if available
+	if(file.exists(paste(i,"/FigTree.tre",sep=""))){
+		tmp.tree <- read.tree(paste(i,"/FigTree.tre",sep=""))
+		species <- tmp.tree[[2]]$tip.label
+	} else if(file.exists(paste(i, "/bpp_model1_", rep,".out", sep=""))){
+		# read in population map from std out file
+		con <- file(paste(i, "/bpp_model1_", rep,".out", sep=""), open="r")
+		lines <- c()
+		read=FALSE
+		while(length(line <- readLines(con, n = 1, warn = FALSE)) > 0) {
+		  if (startsWith(line, "Map of")) {
+			read=TRUE
+			next
+		  } else if (startsWith(line, "Generating")){
+			break
+		  } else if (read == TRUE){
+			lines <- c(lines, line)
+		  } else if ( length(line) == 0 ) {
+			break
+		  }
+		}
+		close(con)
+
+		# split lines and extract taxa names
+		lines <- head(lines,-1)
+		lines <- lines[2:length(lines)]
+		lines <- strsplit(lines, " ")
+		lines <- lapply(lines, function(x){x[!x ==""]})
+		species <- unlist(lapply(lines, '[[', 2))
+	} else {print(paste("No species identified for", i)); break}
+
+	mcmc.df <- read.table(paste(i, "/mcmc.txt", sep=""), header=TRUE)
+	mcmc_list[[count]] <- mcmc(mcmc.df,thin=1)
+	prior <- strsplit(i, "/")
+	model <- prior[[1]][length(prior[[1]])-1]
+
+	# remove burnin as percentage of the chain
+	gen <- nrow(mcmc.df)
+	if(burnin > 0){
+		burnin_gen <- round(gen*burnin, digits=0)
+		mcmc.df <- mcmc.df[-c(1:burnin_gen),]
+	}
+	
+	if(!exists("all_mcmc")){all_mcmc <- mcmc.df
+	} else {all_mcmc <- rbind(all_mcmc,mcmc.df)}
+	count <- count + 1
+}
+
+#### When dealing with uneven sample lengths ####
+#Adjust the length to be even
+lapply(mcmc_list,nrow)
+
+mcmc_list <- mcmc_list[-8]
+
+tmp.list <- list()
+for(i in 1:7){
+tmp.df <- mcmc_list[[i]]
+tmp.list[[i]] <- tmp.df[,2:11]
+}
+
+gelman.diag(as.mcmc.list(tmp.list))
+gelman.plot(as.mcmc.list(tmp.list))
+
+#### Making Trace plots for the variables across chains ####
+tmp.col <- brewer.pal(7,"Dark2")
+for(j in 2:ncol(mcmc_list[[1]])){
+png(paste(varnames(mcmc_list[[1]])[j],"plot.png",sep="_"), res=200, width=4000, height=2000)
+	par(mfrow=c(1,2))
+	tmp.sum <- lapply(mcmc_list, function(x) summary(as.numeric(x[,j])))
+	MAX.x <- max(unlist(lapply(mcmc_list, function(x) nrow(x))))
+	MIN.y <- min(unlist(tmp.sum))
+	MAX.y <- max(unlist(tmp.sum))
+
+	plot(as.numeric(mcmc_list[[1]][,j]),type="l", main=varnames(mcmc_list[[1]])[j], col=alpha(tmp.col[1], 0.5), xlim=c(0,MAX.x), ylim=c(MIN.y, MAX.y), xlab="steps", ylab="value")
+	for(i in 2:7){lines(as.numeric(mcmc_list[[i]][,j]), type="l", col=alpha(tmp.col[i],0.5))}
+	
+	tmp.x <- lapply(mcmc_list, function(x) density(as.numeric(x[,j]))$x)
+	MIN.x <- min(unlist(tmp.x))
+	MAX.x <- max(unlist(tmp.x))
+	tmp.y <- lapply(mcmc_list, function(x) density(as.numeric(x[,j]))$y)
+	MIN.y <- min(unlist(tmp.y))
+	MAX.y <- max(unlist(tmp.y))
+	
+	plot(density(as.numeric(mcmc_list[[1]][,j]), adjust=3), main="Density", col=alpha(tmp.col[1],0.5), xlim=c(MIN.x,MAX.x), ylim=c(MIN.y, MAX.y), xlab="")
+	for(i in 2:7){lines(density(as.numeric(mcmc_list[[i]][,j]), adjust=3), main=varnames(mcmc_list[[i]])[j], col=alpha(tmp.col[i], 0.5))}
+dev.off()
+}
+
+par(mfrow=c(3,4))
+for(j in 2:ncol(mcmc_list[[1]])){
+	tmp.x <- lapply(mcmc_list, function(x) density(as.numeric(x[,j]))$x)
+	MIN.x <- min(unlist(tmp.x))
+	MAX.x <- max(unlist(tmp.x))
+	tmp.y <- lapply(mcmc_list, function(x) density(as.numeric(x[,j]))$y)
+	MIN.y <- min(unlist(tmp.y))
+	MAX.y <- max(unlist(tmp.y))
+	plot(density(as.numeric(mcmc_list[[1]][,j]), adjust=3), main=varnames(mcmc_list[[1]])[j], col=alpha(tmp.col[1],0.5), xlim=c(MIN.x,MAX.x), ylim=c(MIN.y, MAX.y), xlab="")
+}
+
+#### Getting ESS data ####
+effectiveSize(as.mcmc.list(mcmc_list[1:7]))
+
+#### Getting Estimates ####
+HPDinterval(as.mcmc.list(mcmc_list[1],mcmc_list[2],mcmc_list[3],mcmc_list[4],mcmc_list[5],mcmc_list[6],mcmc_list[7]), prob = 0.95)
+
+summary(as.mcmc.list(mcmc_list[1],mcmc_list[2],mcmc_list[3],mcmc_list[4],mcmc_list[5],mcmc_list[6],mcmc_list[7]), prob = 0.95)
+
+##Creating all_mcmc for gdi calculation
+# read in the model tree
+tree <- read.tree(paste(i,"/FigTree.tre", sep=""))[[2]]
+tree <- drop.tip(tree,c("Gag","Ghe","Gsp","Gaa"))
+taxa <- tree$tip.label
+
+#Calculate gdi
+thetaList <- vector(mode = "list", length = length(taxa))
+tauList <- vector(mode = "list", length = length(taxa))
+gdiList <- vector(mode = "list", length = length(taxa))
+gdiTaxa <- vector(mode = "list", length = length(taxa))
+cols <- colnames(all_mcmc)
+
+# for each taxon in the tree
+for(j in 1:length(taxa)){
+  # get species index
+  spIndex <- match(taxa[j], species)
+
+  # get theta that matches taxon
+  thetaList[[j]] <- all_mcmc[,spIndex+1]
+  sp <- species[spIndex]
+
+  # get sister species or node of taxon
+  sis <- getSisters(tree, sp, mode="label")
+  if(is.character(sis[[1]])){
+	node <- findMRCA(tree, tips=c(sis[[1]],sp), type="node")
+	index <- ncol(all_mcmc) - ((length(taxa) + tree$Nnode) + 1 - node)
+	tauList[[j]] <- all_mcmc[,index]
+  } else {
+	node <- sis[[1]] - 1
+	index <- ncol(all_mcmc) - ((length(taxa) + tree$Nnode) + 1 - node)
+	tauList[[j]] <- all_mcmc[,index]
+  }
+  # calculate gdi
+  gdiList[[j]] <- (1-exp((-2*tauList[[j]]/thetaList[[j]])))
+  # save list of species
+  names(gdiTaxa)[j] <- sp
+}
+
+#Plotting gdi
+print(model)
+print(priors)
+dat_theta <- data.frame(matrix(unlist(thetaList), ncol=length(thetaList), byrow=F))
+dat_tau <- data.frame(matrix(unlist(tauList), ncol=length(tauList), byrow=F))
+dat <- data.frame(matrix(unlist(gdiList), ncol=length(gdiList), byrow=F))
+colnames(dat_theta) <- names(gdiTaxa)
+colnames(dat_tau) <- names(gdiTaxa)
+colnames(dat) <- names(gdiTaxa)
+
+tmp <- melt(dat)
+tmp[,2] <- as.numeric(as.matrix(tmp[,2]))
+
+p <- ggplot(data = tmp, aes(x=value, color=variable, fill=variable)) +
+  xlim(c(0,1)) +
+  geom_vline(xintercept = 0.2, lty=2)+
+  geom_vline(xintercept = 0.7, lty=2)+
+  geom_density(alpha=0.1, adjust=2) +
+  scale_color_manual(values=brewer.pal(ncol(dat),"Dark2")) +
+  scale_fill_manual(values=brewer.pal(ncol(dat),"Dark2")) +
+  labs(color="species", fill="species", x="GDI")+
+  ggtitle(label=date()) +
+  annotate("text", label="species", x=0.85, y=Inf, hjust=0.5, vjust=1) +
+  annotate("text", label="ambiguous", x=0.45, y=Inf, hjust=0.5, vjust=1) +
+  annotate("text", label="populations", x=0.1, y=Inf, hjust=0.5, vjust=1) +
+  theme_minimal() + theme(plot.title = element_text(hjust = 1)) 
+p
+
+ggsave(p, file="G_nobilis_all_loci.png", device="png")
+
+}}}}}}}}}} #notepad cleanup
