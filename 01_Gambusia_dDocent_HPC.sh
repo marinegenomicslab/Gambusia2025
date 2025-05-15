@@ -83,16 +83,12 @@ sbatch --export=NODES=8 $WORK/slurm/dDocent_split.slurm
 #SNP calling on normal nodes, scripted to limit to 8 nodes
 ulimit -s 81920
 ls -d *.node | while read i; do cd $i; ulimit -s 81920; sbatch $WORK/slurm/dDocent_freebayes.slurm; cd ..; sleep 2; done
-#ls -d *.node | while read i; do while [ $(squeue | grep afields | awk '$5=="R" {print $0} $5=="PD" {print $0}' | wc -l) -ge 8 ]; do sleep 60; done; cd $i; ulimit -s 81920; sbatch dDocent_freebayes.slurm; cd ..; sleep 2; done
 
 #Checking to see if nodes have the correct number of vcf files with data in them
 ls -d *.node | while read i; do echo "checking $i"; cd $i; BEDS=$(ls mapped.*.bed | wc -l);	VCF=$(find . -name "*.vcf" -size +62k | wc -l); if [ $VCF -lt $BEDS ]; then echo $i "did not complete all the vcf files properly"; fi; if [ $(find . -name "*.vcf" | wc -l) -gt $BEDS ]; then echo $i "has too many vcf files present"; fi; cd ..; done
 
 #Checking to see if vcf file have the same number of contigs in the header as the reference.fasta has
 ls -d *.node | while read i; do echo "checking $i"; cd $i; ls raw.*.vcf | while read j; do VCF=$(head -n1 $j| grep "##" | wc -l); if [ $VCF -eq 0 ]; then echo $i $j "missing complete header"; echo ${i}/${j} >> ../bad.vcf; fi; done; cd ..; done
-
-#Combine all vcfs in each node
-ls -d *.node | while read i; do while [ $(squeue | grep afields | wc -l) -ge 8 ]; do sleep 60; done; cd $i; sbatch $WORK/slurm/dDocent_combine_node.slurm; cd ..; sleep 2; done
 
 #Applying a basic filter to each 
 ls -d *.node | while read i; do cd $i; sbatch $WORK/slurm/dDocent_basic_filters.slurm; cd ..; sleep 2; done
