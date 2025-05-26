@@ -842,17 +842,57 @@ save(gen5.vcf, file="gen5.vcf.gz", compress=T)
 
 #Plotting PCA
 {```{R}```
+#Reassigning thel location codes
+tmp.v <- as.character(as.matrix(gen5@strata$Site2))
+tmp.v[tmp.v == "KS"] <- "KGS"
+tmp.v[tmp.v == "BAL"] <- "SS"
+tmp.v[tmp.v == "PHL"] <- "PL"
+gen5@strata$Site3 <- factor(tmp.v, levels=c("HEAD", "KGS", "EU", "SS", "PL", "ES", "BLNWR", "BC", "Sink7", "Sink27", "Sink31", "Sink37"))
+
+set.loc <- locNames(gen5)[which(!locNames(gen5) %in% c(out.pos, out.neg))]
+gen.net <- gen5[, loc=set.loc]
+set.loc <- locNames(gen5)[which(locNames(gen5) %in% out.pos)]
+gen.out.pos <- gen5[, loc=set.loc]
+set.loc <- locNames(gen5)[which(locNames(gen5) %in% out.neg)]
+gen.out.neg <- gen5[, loc=set.loc]
+
 #Neutral data
 gen.net <- gen.net[,loc=locNames(gen.net)[which(gen.net@loc.n.all > 1)]]
 X.net <- scaleGen(gen.net, NA.method="mean", scale=F)
 pca.net <- dudi.pca(X.net,cent=FALSE,scale=FALSE,scannf=FALSE,nf=5000)
 
+#Getting colors
+LC_pal <- colorRampPalette(c("#000000", "#B0D8A2", "#FFFFFF"))
+LC_col <- LC_pal(11)
+
+TC_pal <- colorRampPalette(c("#000000", "#FC9003", "#FFFFFF"))
+TC_col <- TC_pal(11)
+
+NM_pal <- colorRampPalette(c("#000000", "#87BBE5", "#FFFFFF"))
+NM_col <- NM_pal(11)
+
+col.v <- as.character(as.matrix(levels(gen.net@strata$Site3)))
+col.v[col.v == "HEAD"] <- LC_col[8]
+col.v[col.v == "KGS"] <- LC_col[6]
+col.v[col.v == "EU"] <- LC_col[4]
+
+col.v[col.v == "SS"] <- TC_col[8]
+col.v[col.v == "ES"] <- TC_col[4]
+col.v[col.v == "PL"] <- TC_col[6]
+
+col.v[col.v == "BC"] <- NM_col[8]
+col.v[col.v == "BLNWR"] <- NM_col[9]
+col.v[col.v == "Sink7"] <- NM_col[7]
+col.v[col.v == "Sink27"] <- NM_col[6]
+col.v[col.v == "Sink31"] <- NM_col[5]
+col.v[col.v == "Sink37"] <- NM_col[3]
+
 par(mfrow=c(1,1))
 tmp.dat <- cbind(gen.net@strata, pca.net$li[match(gen.net@strata$INDV, rownames(pca.net$li)),])
 tmp.dat$POP2 <- factor(tmp.dat$POP2, levels=c("Gan-DY","Gan-WT","Gan-NM"))
 
-p.net_Site2_v2 <- ggplot() + geom_point(data=tmp.dat, aes(x=Axis1, y=Axis2, fill=Site2, shape=POP2), size=3) + scale_fill_manual(values=funky(12)) + 
-scale_shape_manual(name = "Region", labels = c("Diamond Y", "West Texas", "New Mexico"), values=c(21,24,22)) + theme_classic() + 
+p.net_Site2_v2 <- ggplot() + geom_point(data=tmp.dat, aes(x=Axis1, y=Axis2, fill=Site3, shape=POP2), size=3) + scale_fill_manual(values=col.v) + 
+scale_shape_manual(name = "Region", labels = c("Leon Creek", "Toyah Creek", "New Mexico"), values=c(21,24,22)) + theme_classic() + 
 labs(x=paste("PC1: ",sprintf("%.2f",(pca.net$eig[1]/sum(pca.net$eig))*100)," %", sep=""), y=paste("PC2: ",sprintf("%.2f",(pca.net$eig[2]/sum(pca.net$eig))*100)," %", sep="")) +
 guides(fill=guide_legend(title="Sites", override.aes = list(shape = 23))) + 
 ggtitle(paste("Neutral data (n=",length(locNames(gen.net))," loci)", sep=""))
@@ -870,8 +910,8 @@ par(mfrow=c(1,1))
 tmp.dat <- cbind(gen.out.pos@strata, pca.out.pos$li[match(gen.out.pos@strata$INDV, rownames(pca.out.pos$li)),])
 tmp.dat$POP2 <- factor(tmp.dat$POP2, levels=c("Gan-DY","Gan-WT","Gan-NM"))
 
-p.out.pos_Site2_v2 <- ggplot() + geom_point(data=tmp.dat, aes(x=Axis1, y=Axis2, fill=Site2, shape=POP2), size=3) + scale_fill_manual(values=funky(12)) + 
-scale_shape_manual(name = "Region", labels = c("Diamond Y", "West Texas", "New Mexico"),values=c(21,24,22)) + theme_classic() + 
+p.out.pos_Site2_v2 <- ggplot() + geom_point(data=tmp.dat, aes(x=Axis1, y=Axis2, fill=Site3, shape=POP2), size=3) + scale_fill_manual(values=col.v) + 
+scale_shape_manual(name = "Region", labels = c("Leon Creek", "Toyah Creek", "New Mexico"),values=c(21,24,22)) + theme_classic() + 
 labs(x=paste("PC1: ",sprintf("%.2f",(pca.out.pos$eig[1]/sum(pca.out.pos$eig))*100)," %", sep=""), y=paste("PC2: ",sprintf("%.2f",(pca.out.pos$eig[2]/sum(pca.out.pos$eig))*100)," %", sep="")) +
 guides(fill=guide_legend(title="Sites", override.aes = list(shape = 23)), shape=guide_legend(title="Regions")) + ggtitle(paste("Directional Outlier data (n=",length(locNames(gen.out.pos))," loci)", sep=""))
 p.out.pos_Site2_v2
@@ -887,15 +927,14 @@ par(mfrow=c(1,1))
 tmp.dat <- cbind(gen.out.neg@strata, pca.out.neg$li[match(gen.out.neg@strata$INDV, rownames(pca.out.neg$li)),])
 tmp.dat$POP2 <- factor(tmp.dat$POP2, levels=c("Gan-DY","Gan-WT","Gan-NM"))
 
-p.out.neg_Site2_v2 <- ggplot() + geom_point(data=tmp.dat, aes(x=Axis1, y=Axis2, fill=Site2, shape=POP2), size=3) + scale_fill_manual(values=funky(12)) + 
-scale_shape_manual(name = "Region", labels = c("Diamond Y", "West Texas", "New Mexico"),values=c(21,24,22)) + theme_classic() + 
+p.out.neg_Site2_v2 <- ggplot() + geom_point(data=tmp.dat, aes(x=Axis1, y=Axis2, fill=Site3, shape=POP2), size=3) + scale_fill_manual(values=col.v) + 
+scale_shape_manual(name = "Region", labels = c("Leon Creek", "Toyah Creek", "New Mexico"),values=c(21,24,22)) + theme_classic() + 
 labs(x=paste("PC1: ",sprintf("%.2f",(pca.out.neg$eig[1]/sum(pca.out.neg$eig))*100)," %", sep=""), y=paste("PC2: ",sprintf("%.2f",(pca.out.neg$eig[2]/sum(pca.out.neg$eig))*100)," %", sep="")) +
 guides(fill=guide_legend(title="Sites", override.aes = list(shape = 23)), shape=guide_legend(title="Regions")) + ggtitle(paste("Balancing Outlier data (n=",length(locNames(gen.out.neg))," loci)", sep=""))
 p.out.neg_Site2_v2
 
 ggsave(p.out.neg_Site2_v2, file="PCA_genBal_Site2_v2.png", device="png")
 ggsave(p.out.neg_Site2_v2, file="PCA_genBal_Site2_v2.svg", device="svg")
-
 }
 
 #Looking at monomorphic loci by region
