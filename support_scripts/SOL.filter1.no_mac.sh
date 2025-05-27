@@ -143,4 +143,4 @@ vcftools --vcf B.1.3.3.2.3.4.2.recode.vcf --remove lowDP.indv --recode --recode-
 mawk -v x=0.65 '$5 > x' B.1.3.3.2.3.4.2.imiss | cut -f1 > lowDP.indv
 vcftools --vcf B.1.3.3.2.3.4.2.recode.vcf --remove lowDP.indv --recode --recode-INFO-all --out B.1.3.3.2.3.4.2.2
 
-sh /home/afields/bin/SOL.filter2.no_mac.sh
+sh ~/bin/SOL.filter2.no_mac.sh
