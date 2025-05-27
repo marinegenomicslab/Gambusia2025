@@ -142,6 +142,7 @@ write.table(dat[dat$MEAN_DEPTH > cutoff, c("CHROM","POS")], file="high_depth_loc
 vcftools --vcf B.1.3.3.2.3.2.1.2.SNP.finalb.1.recode.vcf --out SNP.TRS.F06 --recode --recode-INFO-all --exclude-positions high_depth_loci.txt
 
 charts.sh SNP.TRS.F06.recode.vcf
+cp -s SNP.TRS.F06.2024-06-01/indv.csv ./Gno_indv.csv
 } #notepad cleanup
 
 #Filtering individuals with > 10% missing data
