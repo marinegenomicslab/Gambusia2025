@@ -232,7 +232,7 @@ writeGenPop(gen2, "SNP.TRS.Lib_all.gen", "All Spinner data without dups by Libra
 
 #Converting to BS format
 {```{bash}```
-java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile SNP.TRS.Lib_all.gen -inputformat GENEPOP -outputfile SNP.TRS.Lib_all.BS -outputformat BAYESCAN -spid /home/afields/bin/genepop_to_BS.spid
+java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile SNP.TRS.Lib_all.gen -inputformat GENEPOP -outputfile SNP.TRS.Lib_all.BS -outputformat BAYESCAN -spid ~/bin/genepop_to_BS.spid
 } #notepad cleanup
 
 #Running Bayescan
@@ -562,10 +562,10 @@ writeGenPop(gen.list[["Gan-DY"]], "Gan-DY.Site2_all.gen", "Diamond Y G. nobilis 
 
 #Converting to BS format
 {```{bash}```
-java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile SNP.TRS.Site2_all.gen -inputformat GENEPOP -outputfile SNP.TRS.Site2_all.BS -outputformat BAYESCAN -spid /home/afields/bin/genepop_to_BS.spid
-java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gan-NM.Site2_all.gen -inputformat GENEPOP -outputfile Gan-NM.Site2_all.BS -outputformat BAYESCAN -spid /home/afields/bin/genepop_to_BS.spid
-java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gan-WT.Site2_all.gen -inputformat GENEPOP -outputfile Gan-WT.Site2_all.BS -outputformat BAYESCAN -spid /home/afields/bin/genepop_to_BS.spid
-java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gan-DY.Site2_all.gen -inputformat GENEPOP -outputfile Gan-DY.Site2_all.BS -outputformat BAYESCAN -spid /home/afields/bin/genepop_to_BS.spid
+java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile SNP.TRS.Site2_all.gen -inputformat GENEPOP -outputfile SNP.TRS.Site2_all.BS -outputformat BAYESCAN -spid ~/bin/genepop_to_BS.spid
+java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gan-NM.Site2_all.gen -inputformat GENEPOP -outputfile Gan-NM.Site2_all.BS -outputformat BAYESCAN -spid ~/bin/genepop_to_BS.spid
+java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gan-WT.Site2_all.gen -inputformat GENEPOP -outputfile Gan-WT.Site2_all.BS -outputformat BAYESCAN -spid ~/bin/genepop_to_BS.spid
+java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gan-DY.Site2_all.gen -inputformat GENEPOP -outputfile Gan-DY.Site2_all.BS -outputformat BAYESCAN -spid ~/bin/genepop_to_BS.spid
 } #notepad cleanup
 
 #Running Bayescan
