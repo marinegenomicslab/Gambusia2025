@@ -65,7 +65,7 @@ return(genind.vcf[ ,loc=set.loc])
 
 #Importing Data
 {```{R}```
-strata <- read.csv(file = "../../filtering/filtering_v2_May2024/SNP.TRS.F06.2024-05-17/indv.csv", header = TRUE)
+strata <- read.csv(file = "../filtering/Gam_indv.csv", header = TRUE)
 #Adding nobilis grouping inforrmation
 tmp.v <- as.character(as.matrix(strata$POP))
 tmp.v[tmp.v %in% c("Gaa-GSW1", "Gaa-HEAD", "Gaa-LCCSP", "Gaf-LCCSP")] <- "Gaa"
