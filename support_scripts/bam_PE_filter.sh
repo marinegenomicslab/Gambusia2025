@@ -31,9 +31,9 @@ echo "$TMP reads out of $TOT found to be not properly paired in $i"
 if [ $TMP -eq 0 ]; then mv ${i}_tmp.bam ${i}_PE_filter.bam
 rm ${i}_exclude.list
 elif [ $PER -lt 10 ]; then
-/work/marinegenomics/afields3/programs/miniconda3/bin/java -jar /work/marinegenomics/afields3/programs/miniconda3/share/picard-3.1.1-0/picard.jar FilterSamReads I=${i}_tmp.bam O=${i}_PE_filter.bam READ_LIST_FILE=${i}_exclude.list FILTER=excludeReadList  2> ${i}_PE_fil.log
+$WORK/programs/miniconda3/bin/java -jar $WORK/programs/miniconda3/share/picard-3.1.1-0/picard.jar FilterSamReads I=${i}_tmp.bam O=${i}_PE_filter.bam READ_LIST_FILE=${i}_exclude.list FILTER=excludeReadList  2> ${i}_PE_fil.log
 rm ${i}_tmp.bam ${i}_exclude.list
 else echo $i >> Check_Samples.txt
-/work/marinegenomics/afields3/programs/miniconda3/bin/java -jar /work/marinegenomics/afields3/programs/miniconda3/share/picard-3.1.1-0/picard.jar FilterSamReads I=${i}_tmp.bam O=${i}_PE_filter.bam READ_LIST_FILE=${i}_exclude.list FILTER=excludeReadList  2> ${i}_PE_fil.log
+$WORK/programs/miniconda3/bin/java -jar $WORK/programs/miniconda3/share/picard-3.1.1-0/picard.jar FilterSamReads I=${i}_tmp.bam O=${i}_PE_filter.bam READ_LIST_FILE=${i}_exclude.list FILTER=excludeReadList  2> ${i}_PE_fil.log
 rm ${i}_tmp.bam ${i}_exclude.list
 fi
