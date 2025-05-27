@@ -117,7 +117,7 @@ return(Kmean.map)
 
 #Importing Data
 {```{R}```
-strata <- read.csv(file = "../../filtering/Gnobilis_May2024/SNP.TRS.F06.2024-06-01/indv.csv", header = TRUE)
+strata <- read.csv(file = "../filtering/Gnobilis/Gno_indv.csv", header = TRUE)
 #Adding site to strata
 tmp.v <- matrix(unlist(strsplit(as.character(as.matrix(strata$POP)), "-")), byrow=T, ncol=2)[,2]
 strata$Site <- as.factor(tmp.v)
