@@ -313,11 +313,11 @@ writeGenPop(gen.DY, "Gan-DY_Lib.gen", "G. nobilis in DY data by Library")
 
 #Converting to BS format
 {```{bash}```
-java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gaa_Lib.gen -inputformat GENEPOP -outputfile Gaa_Lib.BS -outputformat BAYESCAN -spid /home/afields/bin/genepop_to_BS.spid
-java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gag_Lib.gen -inputformat GENEPOP -outputfile Gag_Lib.BS -outputformat BAYESCAN -spid /home/afields/bin/genepop_to_BS.spid
-java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gan-WT_Lib.gen -inputformat GENEPOP -outputfile Gan-WT_Lib.BS -outputformat BAYESCAN -spid /home/afields/bin/genepop_to_BS.spid
-java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gan-NM_Lib.gen -inputformat GENEPOP -outputfile Gan-NM_Lib.BS -outputformat BAYESCAN -spid /home/afields/bin/genepop_to_BS.spid
-java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gan-DY_Lib.gen -inputformat GENEPOP -outputfile Gan-DY_Lib.BS -outputformat BAYESCAN -spid /home/afields/bin/genepop_to_BS.spid
+java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gaa_Lib.gen -inputformat GENEPOP -outputfile Gaa_Lib.BS -outputformat BAYESCAN -spid ~/bin/genepop_to_BS.spid
+java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gag_Lib.gen -inputformat GENEPOP -outputfile Gag_Lib.BS -outputformat BAYESCAN -spid ~/bin/genepop_to_BS.spid
+java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gan-WT_Lib.gen -inputformat GENEPOP -outputfile Gan-WT_Lib.BS -outputformat BAYESCAN -spid ~/bin/genepop_to_BS.spid
+java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gan-NM_Lib.gen -inputformat GENEPOP -outputfile Gan-NM_Lib.BS -outputformat BAYESCAN -spid ~/bin/genepop_to_BS.spid
+java8 -jar /usr/local/bin/PGDSpider2-cli.jar -inputfile Gan-DY_Lib.gen -inputformat GENEPOP -outputfile Gan-DY_Lib.BS -outputformat BAYESCAN -spid ~/bin/genepop_to_BS.spid
 } #notepad cleanup
 
 #Running BAYESCAN
@@ -1128,7 +1128,7 @@ nano ~/bin/genotype_frequencies.txt
 {```{bash}```
 #Generating data
 {```{bash}```
-cd /home/afields/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids
+cd ~/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids
 #Preparing dir
 mkdir -p geiseri/NM
 cd geiseri/NM
@@ -1137,13 +1137,13 @@ for i in $(seq 1 5); do mkdir run_$i; done
 for i in $(seq 1 5); do 
 echo "Processing run $i"
 cd run_$i
-Rscript ~/bin/NewHybrids_vcf_to_txt.r /home/afields/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Gg_NM.recode.vcf newhybrids_input_GxN_NM.txt
+Rscript ~/bin/NewHybrids_vcf_to_txt.r ~/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Gg_NM.recode.vcf newhybrids_input_GxN_NM.txt
 cd ..
 done
 
 #Adding header
 for i in $(seq 1 5); do 
-INDV=$(vcfsamplenames /home/afields/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Gg_NM.recode.vcf | wc -l);
+INDV=$(vcfsamplenames ~/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Gg_NM.recode.vcf | wc -l);
 sed -i "1 s/^/NumIndivs $INDV\nNumLoci 150\nDigits 1\nFormat Lumped\n\n/" run_$i/newhybrids_input_GxN_NM.txt;
 done
 
@@ -1210,13 +1210,13 @@ for i in $(seq 1 5); do mkdir run_$i; done
 for i in $(seq 1 5); do 
 echo "Processing run $i"
 cd run_$i
-Rscript ~/bin/NewHybrids_vcf_to_txt.r /home/afields/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Gg_DY.recode.vcf newhybrids_input_GxN_DY.txt
+Rscript ~/bin/NewHybrids_vcf_to_txt.r ~/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Gg_DY.recode.vcf newhybrids_input_GxN_DY.txt
 cd ..
 done
 
 #Adding header
 for i in $(seq 1 5); do 
-INDV=$(vcfsamplenames /home/afields/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Gg_DY.recode.vcf | wc -l);
+INDV=$(vcfsamplenames ~/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Gg_DY.recode.vcf | wc -l);
 sed -i "1 s/^/NumIndivs $INDV\nNumLoci 150\nDigits 1\nFormat Lumped\n\n/" run_$i/newhybrids_input_GxN_DY.txt;
 done
 
@@ -1283,13 +1283,13 @@ for i in $(seq 1 5); do mkdir run_$i; done
 for i in $(seq 1 5); do 
 echo "Processing run $i"
 cd run_$i
-Rscript ~/bin/NewHybrids_vcf_to_txt.r /home/afields/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Gg_WTX.recode.vcf newhybrids_input_GxN_WTX.txt
+Rscript ~/bin/NewHybrids_vcf_to_txt.r ~/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Gg_WTX.recode.vcf newhybrids_input_GxN_WTX.txt
 cd ..
 done
 
 #Adding header
 for i in $(seq 1 5); do 
-INDV=$(vcfsamplenames /home/afields/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Gg_WTX.recode.vcf | wc -l);
+INDV=$(vcfsamplenames ~/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Gg_WTX.recode.vcf | wc -l);
 sed -i "1 s/^/NumIndivs $INDV\nNumLoci 150\nDigits 1\nFormat Lumped\n\n/" run_$i/newhybrids_input_GxN_WTX.txt;
 done
 
@@ -1348,7 +1348,7 @@ q("no")
 {```{bash}```
 #Generating data
 {```{bash}```
-cd /home/afields/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids
+cd ~/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids
 #Preparing dir
 mkdir -p affinis/NM
 cd affinis/NM
@@ -1357,13 +1357,13 @@ for i in $(seq 1 5); do mkdir run_$i; done
 for i in $(seq 1 5); do 
 echo "Processing run $i"
 cd run_$i
-Rscript ~/bin/NewHybrids_vcf_to_txt.r /home/afields/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Ga_NM.recode.vcf newhybrids_input_AxN_NM.txt
+Rscript ~/bin/NewHybrids_vcf_to_txt.r ~/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Ga_NM.recode.vcf newhybrids_input_AxN_NM.txt
 cd ..
 done
 
 #Adding header
 for i in $(seq 1 5); do 
-INDV=$(vcfsamplenames /home/afields/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Ga_NM.recode.vcf | wc -l);
+INDV=$(vcfsamplenames ~/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Ga_NM.recode.vcf | wc -l);
 sed -i "1 s/^/NumIndivs $INDV\nNumLoci 150\nDigits 1\nFormat Lumped\n\n/" run_$i/newhybrids_input_AxN_NM.txt;
 done
 
@@ -1430,13 +1430,13 @@ for i in $(seq 1 5); do mkdir run_$i; done
 for i in $(seq 1 5); do 
 echo "Processing run $i"
 cd run_$i
-Rscript ~/bin/NewHybrids_vcf_to_txt.r /home/afields/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Ga_DY.recode.vcf newhybrids_input_AxN_DY.txt
+Rscript ~/bin/NewHybrids_vcf_to_txt.r ~/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Ga_DY.recode.vcf newhybrids_input_AxN_DY.txt
 cd ..
 done
 
 #Adding header
 for i in $(seq 1 5); do 
-INDV=$(vcfsamplenames /home/afields/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Ga_DY.recode.vcf | wc -l);
+INDV=$(vcfsamplenames ~/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Ga_DY.recode.vcf | wc -l);
 sed -i "1 s/^/NumIndivs $INDV\nNumLoci 150\nDigits 1\nFormat Lumped\n\n/" run_$i/newhybrids_input_AxN_DY.txt;
 done
 
@@ -1503,13 +1503,13 @@ for i in $(seq 1 5); do mkdir run_$i; done
 for i in $(seq 1 5); do 
 echo "Processing run $i"
 cd run_$i
-Rscript ~/bin/NewHybrids_vcf_to_txt.r /home/afields/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Ga_WTX.recode.vcf newhybrids_input_AxN_WTX.txt
+Rscript ~/bin/NewHybrids_vcf_to_txt.r ~/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Ga_WTX.recode.vcf newhybrids_input_AxN_WTX.txt
 cd ..
 done
 
 #Adding header
 for i in $(seq 1 5); do 
-INDV=$(vcfsamplenames /home/afields/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Ga_WTX.recode.vcf | wc -l);
+INDV=$(vcfsamplenames ~/Workspace/misc/Gambusia/analysis/May_2024/new_hybrids/Ga_WTX.recode.vcf | wc -l);
 sed -i "1 s/^/NumIndivs $INDV\nNumLoci 150\nDigits 1\nFormat Lumped\n\n/" run_$i/newhybrids_input_AxN_WTX.txt;
 done
 
@@ -1692,7 +1692,7 @@ library(gdiPipeline)
 library(RColorBrewer)
 
 #Load variables
-wd="/home/afields/Workspace/misc/Gambusia/analysis/gdi/gambusia/test"
+wd=getwd()
 plotColors = c(brewer.pal(7, "Paired"), "black") # for later plots of GDI
 nLoci = 1585
 threads = 16
@@ -1720,7 +1720,7 @@ checkConvergence(wd=wd, nreps=nreps, burnin=burnin)
 #Loop for multiple node analysis
 {```{bash}```
 seq 1 $(cat BPPTaskFile.txt | wc -l) | while read i; do
-#if [ $(squeue -u afields3 | grep bpp | wc -l) -gt 3 ]; then sleep 30; fi
+#if [ $(squeue | grep bpp | wc -l) -gt 3 ]; then sleep 30; fi
 TMP=$(head -n$i BPPTaskFile.txt | tail -n1)
 DIR=$(echo $TMP | cut -f2 -d" " | cut -f1 -d";")
 MODEL=$(echo $DIR | cut -f1 -d"/")
