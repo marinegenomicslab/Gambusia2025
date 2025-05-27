@@ -296,6 +296,5 @@ sbatch $WORK/slurm/haplotyping.slurm
 }
 
 {```{bash}```
-rsync -av haplotyping afields@hactar.ad.tamucc.edu:/home/afields/Workspace/misc/Gambusia/filtering_May2024
 charts.sh SNP.TRS.F08.vcf
 }
