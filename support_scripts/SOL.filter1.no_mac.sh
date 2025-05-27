@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Original version by SOL
+
 #Usage:
 #SOL.filter1.sh <file to analyzed>
 
