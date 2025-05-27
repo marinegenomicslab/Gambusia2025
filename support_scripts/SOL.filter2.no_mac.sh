@@ -86,4 +86,4 @@ do
   echo "$i $SNP $CONTIG $INDV" >> Final_Filter.count 
 done
 mv Final_Filter.count ..
-# SOL
+# Original version by SOL
