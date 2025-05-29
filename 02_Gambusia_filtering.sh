@@ -66,9 +66,6 @@ library('vcfR')
 {```{R}```
 strata <- read.csv(file = "SNP.TRS.F03.2024-04-25/indv.csv", header = TRUE)
 strata$Species <- matrix(unlist(strsplit(as.character(as.matrix(strata$POP)), "-")), ncol=2, byrow=T)[,1]
-strata$Species[strata$Species == "Gaf"] <- "Gaa"
-strata$Species[strata$Species == "Gno"] <- "Gan"
-strata$Species[strata$Species == "Gge"] <- "Gag"
 
 vcf <- read.vcfR(file="SNP.TRS.F03.recode.vcf")
 gen.vcf<-vcfR2genind(vcf)
@@ -176,11 +173,11 @@ library('related')
 strata <- read.csv(file = "SNP.TRS.F06.2024-05-17/indv.csv", header = TRUE)
 #Adding nobilis grouping inforrmation
 tmp.v <- as.character(as.matrix(strata$POP))
-tmp.v[tmp.v %in% c("Gaa-GSW1", "Gaa-HEAD", "Gaa-LCCSP", "Gaf-LCCSP")] <- "Gaa"
+tmp.v[tmp.v %in% c("Gaa-GSW1", "Gaa-HEAD", "Gaa-LCCSP")] <- "Gaa"
 tmp.v[tmp.v %in% c("Gag-CHS", "Gag-ES","Gag-SMR")] <- "Gag"
-tmp.v[tmp.v %in% c("Gan-CHS", "Gan-ES", "Gan-PHL", "Gan-BAL", "Gno-BAL")] <- "Gan-WT"
-tmp.v[tmp.v %in% c("Gan-EU", "Gan-FLS", "Gan-HEAD", "Gan-DY", "Gno-DY")] <- "Gan-DY"
-tmp.v[tmp.v %in% c("Gan-Sink27", "Gan-Sink31", "Gan-Sink37", "Gan-Sink7", "Gan-BC", "Gan-BLNWR", "Gno-BLNWR", "Gno-BC")] <- "Gan-NM"
+tmp.v[tmp.v %in% c("Gan-CHS", "Gan-ES", "Gan-PHL", "Gan-BAL")] <- "Gan-WT"
+tmp.v[tmp.v %in% c("Gan-EU", "Gan-FLS", "Gan-HEAD", "Gan-DY")] <- "Gan-DY"
+tmp.v[tmp.v %in% c("Gan-Sink27", "Gan-Sink31", "Gan-Sink37", "Gan-Sink7", "Gan-BC", "Gan-BLNWR")] <- "Gan-NM"
 strata$POP2 <- as.factor(tmp.v)
 
 #Checking the sample information
