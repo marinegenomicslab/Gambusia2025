@@ -3,3 +3,8 @@
 *Gambusia nobilis* is a federally Endangered species found across a fragmented distribution within the Pecos River Drainage of Texas and New Mexico, USA. Drought, human water usage, and potential hybridization and competition with the introduced congeneric *G. affinis* and *G. geiseri* threaten species persistence. Therefore, a population genomics study was conducted to provide critical information for conservation planning. Unsupervised clustering suggested hierarchical structure, with a primary K =3 and deep divergences were detected among samples grouped into the Leon Creek watershed, the Toyah Creek watershed, and water bodies within the Bitter Lake National Wildlife Refuge (*F*’<sub>ST</sub> = 0.55–0.76 for putatively neutral data). Phylogenetic analyses showed three distinct clades corresponding to these groups, with split times estimated to be in the last 50,000 years. Subsequent morphological analyses detected a number of differences among the three groups, including male color pattern in life, gonopodium morphology, and the number of caudal-fin rays in both sexes. Taken as a whole, the results indicate that G. nobilis comprises three endangered species (two of which are named herein), rather than one, and the study highlights the daunting yet critical task of describing species diversity during a period of unprecedented diversity loss.
 
 Scripts are best viewed in notepad++ (https://notepad-plus-plus.org/)
+
+
+BioProject: https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1337111<br>
+Dryad: http://dx.doi.org/10.5061/dryad.jsxksn0nf<br>
+FigShare: http://dx.doi.org/10.6084/m9.figshare.c.8125517
